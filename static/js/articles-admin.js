@@ -3,6 +3,23 @@
  */
 let articlesListData = [], articlesFilters = { skip: 0, limit: 20, search: '' }, articlesTotal = 0;
 
+const STATUS_COLORS = {
+    'published': 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    'draft': 'bg-zinc-50 text-zinc-700 border-zinc-100',
+    'review': 'bg-amber-50 text-amber-700 border-amber-100'
+};
+
+function formatDate(dateStr) {
+    if (!dateStr) return 'N/A';
+    const date = new Date(dateStr);
+    const today = new Date();
+    const diff = Math.floor((today - date) / (1000 * 60 * 60 * 24));
+    if (diff === 0) return 'Aujourd\'hui';
+    if (diff === 1) return 'Hier';
+    if (diff < 7) return `Il y a ${diff} jours`;
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 async function loadArticlesList() {
     try {
         const params = new URLSearchParams();
@@ -36,21 +53,24 @@ function renderArticlesList() {
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-zinc-100">
-                        ${articlesListData.map(a => `
+                        ${articlesListData.map(a => {
+                            const authorName = a.author || a.author_name || 'Auteur';
+                            const authorInitials = a.author_initials || authorName.substring(0, 2).toUpperCase();
+                            return `
                             <tr class="hover:bg-zinc-50/50 transition">
                                 <td class="px-6 py-4"><input type="checkbox" class="article-list-checkbox rounded border-zinc-300 text-zinc-900 focus:ring-0 cursor-pointer" data-id="${a.id}" onchange="updateArticlesSelection()"></td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center">
                                         <div class="h-8 w-8 rounded bg-zinc-200 mr-3 flex-shrink-0 overflow-hidden">
-                                            ${a.cover_image ? `<img src="${a.cover_image}" class="h-full w-full object-cover">` : `<div class="h-full w-full flex items-center justify-center text-[10px] text-zinc-600">${a.author_initials}</div>`}
+                                            ${a.cover_image ? `<img src="${a.cover_image}" class="h-full w-full object-cover">` : `<div class="h-full w-full flex items-center justify-center text-[10px] text-zinc-600">${authorInitials}</div>`}
                                         </div>
                                         <span class="font-medium text-zinc-900 truncate max-w-[200px]">${a.title}</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center">
-                                        <div class="h-5 w-5 rounded-full bg-zinc-300 mr-2 flex items-center justify-center text-[10px] text-zinc-600 font-bold">${a.author_initials}</div>
-                                        <span>${a.author}</span>
+                                        <div class="h-5 w-5 rounded-full bg-zinc-300 mr-2 flex items-center justify-center text-[10px] text-zinc-600 font-bold">${authorInitials}</div>
+                                        <span>${authorName}</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
@@ -58,7 +78,7 @@ function renderArticlesList() {
                                         ${a.status === 'published' ? 'Publié' : a.status === 'review' ? 'Relecture' : 'Brouillon'}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-xs">${a.views}</td>
+                                <td class="px-6 py-4 text-xs">${a.views || 0}</td>
                                 <td class="px-6 py-4 text-xs">${formatDate(a.created_at)}</td>
                                 <td class="px-6 py-4 text-right">
                                     <button onclick="editArticle(${a.id})" class="text-zinc-400 hover:text-zinc-900 transition mr-2">
@@ -69,7 +89,8 @@ function renderArticlesList() {
                                     </button>
                                 </td>
                             </tr>
-                        `).join('')}
+                        `;
+                        }).join('')}
                     </tbody>
                 </table>
             </div>

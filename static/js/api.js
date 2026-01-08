@@ -50,7 +50,7 @@ class LumièreAPI {
         if (params.category) queryParams.append('category', params.category);
         
         const query = queryParams.toString();
-        return this.request(`/articles/${query ? '?' + query : ''}`);
+        return this.request(`/articles${query ? '?' + query : ''}`);
     }
 
     async getArticle(id) {
@@ -84,7 +84,7 @@ class LumièreAPI {
         if (params.search) queryParams.append('search', params.search);
         
         const query = queryParams.toString();
-        return this.request(`/spots/${query ? '?' + query : ''}`);
+        return this.request(`/spots${query ? '?' + query : ''}`);
     }
 
     async getSpot(id) {

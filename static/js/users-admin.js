@@ -3,6 +3,17 @@
  */
 let usersData = [], usersFilters = { skip: 0, limit: 20, search: '' };
 
+function formatDate(dateStr) {
+    if (!dateStr) return 'N/A';
+    const date = new Date(dateStr);
+    const today = new Date();
+    const diff = Math.floor((today - date) / (1000 * 60 * 60 * 24));
+    if (diff === 0) return 'Aujourd\'hui';
+    if (diff === 1) return 'Hier';
+    if (diff < 7) return `Il y a ${diff} jours`;
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 async function loadUsers() {
     try {
         const params = new URLSearchParams();

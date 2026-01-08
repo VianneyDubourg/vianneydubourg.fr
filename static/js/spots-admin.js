@@ -46,13 +46,13 @@ function renderSpotsList() {
                                 </td>
                                 <td class="px-6 py-4 font-medium text-zinc-900">${s.name}</td>
                                 <td class="px-6 py-4 text-xs">${s.location}</td>
-                                <td class="px-6 py-4 text-xs text-zinc-400">${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}</td>
+                                <td class="px-6 py-4 text-xs text-zinc-400">${(s.latitude || 0).toFixed(4)}, ${(s.longitude || 0).toFixed(4)}</td>
                                 <td class="px-6 py-4">
                                     <span class="px-2 py-0.5 rounded text-xs bg-zinc-100 text-zinc-600">${s.category || 'N/A'}</span>
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="flex items-center text-xs text-amber-500">
-                                        ${s.rating.toFixed(1)} <span class="iconify ml-0.5" data-icon="lucide:star" data-width="10"></span>
+                                        ${(s.rating || 0).toFixed(1)} <span class="iconify ml-0.5" data-icon="lucide:star" data-width="10"></span>
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">

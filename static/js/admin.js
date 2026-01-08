@@ -55,21 +55,24 @@ function closeFilters() {
 function renderAdminArticles() {
     const tbody = document.querySelector('#view-admin tbody');
     if (!tbody) return;
-    tbody.innerHTML = adminArticles.map(a => `
+    tbody.innerHTML = adminArticles.map(a => {
+        const authorName = a.author || a.author_name || 'Auteur';
+        const authorInitials = a.author_initials || authorName.substring(0, 2).toUpperCase();
+        return `
         <tr class="hover:bg-zinc-50/50 transition">
             <td class="px-6 py-4"><input type="checkbox" class="article-checkbox rounded border-zinc-300 text-zinc-900 focus:ring-0 cursor-pointer" data-id="${a.id}" onchange="updateSelection()"></td>
             <td class="px-6 py-4">
                 <div class="flex items-center">
                     <div class="h-8 w-8 rounded bg-zinc-200 mr-3 flex-shrink-0 overflow-hidden">
-                        ${a.cover_image ? `<img src="${a.cover_image}" class="h-full w-full object-cover">` : `<div class="h-full w-full flex items-center justify-center text-[10px] text-zinc-600">${a.author_initials}</div>`}
+                        ${a.cover_image ? `<img src="${a.cover_image}" class="h-full w-full object-cover">` : `<div class="h-full w-full flex items-center justify-center text-[10px] text-zinc-600">${authorInitials}</div>`}
                     </div>
                     <span class="font-medium text-zinc-900 truncate max-w-[200px]">${a.title}</span>
                 </div>
             </td>
             <td class="px-6 py-4">
                 <div class="flex items-center">
-                    <div class="h-5 w-5 rounded-full bg-zinc-300 mr-2 flex items-center justify-center text-[10px] text-zinc-600 font-bold">${a.author_initials}</div>
-                    <span>${a.author}</span>
+                    <div class="h-5 w-5 rounded-full bg-zinc-300 mr-2 flex items-center justify-center text-[10px] text-zinc-600 font-bold">${authorInitials}</div>
+                    <span>${authorName}</span>
                 </div>
             </td>
             <td class="px-6 py-4">
@@ -84,7 +87,8 @@ function renderAdminArticles() {
                 </button>
             </td>
         </tr>
-    `).join('');
+    `;
+    }).join('');).join('');
     const headerCheckbox = document.querySelector('#view-admin thead input[type="checkbox"]');
     if (headerCheckbox) headerCheckbox.onchange = (e) => {
         document.querySelectorAll('.article-checkbox').forEach(cb => cb.checked = e.target.checked);

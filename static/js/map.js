@@ -40,7 +40,7 @@ function updateMapMarkers() {
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
                 <h3 style="margin:0;font-size:14px;font-weight:600;color:#18181b">${spot.name}</h3>
                 <span style="display:flex;align-items:center;gap:2px;color:#f59e0b;font-size:12px;font-weight:500">
-                    ${spot.rating.toFixed(1)} 
+                    ${(spot.rating || 0).toFixed(1)} 
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                     </svg>
@@ -52,9 +52,11 @@ function updateMapMarkers() {
             </div>
         </div>`;
         
-        const marker = L.marker([spot.latitude, spot.longitude], { icon: customIcon })
-            .addTo(map).bindPopup(popupContent);
-        markers.push(marker);
+        if (spot.latitude && spot.longitude) {
+            const marker = L.marker([spot.latitude, spot.longitude], { icon: customIcon })
+                .addTo(map).bindPopup(popupContent);
+            markers.push(marker);
+        }
     });
     
     if (markers.length > 0) {

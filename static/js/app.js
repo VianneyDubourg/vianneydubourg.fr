@@ -18,7 +18,10 @@ async function loadArticles() {
 function renderArticles() {
     const articlesGrid = document.querySelector('#view-home .grid');
     if (!articlesGrid || articlesData.length === 0) return;
-    articlesGrid.innerHTML = articlesData.map(article => `
+    articlesGrid.innerHTML = articlesData.map(article => {
+        const authorName = article.author_name || 'Auteur';
+        const authorInitials = authorName.substring(0, 2).toUpperCase();
+        return `
         <article class="group cursor-pointer">
             <div class="aspect-[4/3] w-full overflow-hidden rounded-xl bg-zinc-200 relative mb-4">
                 <img src="${article.cover_image || 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}" 
@@ -31,14 +34,15 @@ function renderArticles() {
             <div class="flex items-center space-x-2 text-xs text-zinc-500 mb-2">
                 <span>${new Date(article.published_at || article.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                 <span class="w-1 h-1 bg-zinc-300 rounded-full"></span>
-                <span>${article.reading_time} min de lecture</span>
+                <span>${article.reading_time || 5} min de lecture</span>
             </div>
             <h3 class="text-lg font-semibold text-zinc-900 mb-2 leading-snug group-hover:text-zinc-600 transition-colors">
                 ${article.title}
             </h3>
             <p class="text-sm text-zinc-500 line-clamp-2">${article.excerpt || ''}</p>
         </article>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // Load spots from API
@@ -73,7 +77,7 @@ function renderSpotsList() {
                 <div class="flex justify-between items-start">
                     <h3 class="text-sm font-semibold text-zinc-900 truncate">${spot.name}</h3>
                     <span class="flex items-center text-xs font-medium text-amber-500">
-                        ${spot.rating.toFixed(1)} <span class="iconify ml-0.5" data-icon="lucide:star" data-width="10"></span>
+                        ${(spot.rating || 0).toFixed(1)} <span class="iconify ml-0.5" data-icon="lucide:star" data-width="10"></span>
                     </span>
                 </div>
                 <p class="text-xs text-zinc-500 mt-1">${spot.location}</p>
