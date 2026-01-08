@@ -9,7 +9,7 @@ from typing import List, Optional
 
 from app.database import get_db
 from app.models import Article, Spot, User, Newsletter, Comment, ArticleStatus
-from app.schemas import UserResponse
+from app.schemas import UserResponse, UserUpdate
 from app.auth import get_current_admin_user
 
 router = APIRouter()
@@ -57,7 +57,8 @@ async def get_all_articles(
     status: Optional[ArticleStatus] = None,
     category: Optional[str] = None,
     date_from: Optional[str] = None,
-    date_to: Optional[str] = None
+    date_to: Optional[str] = None,
+    search: Optional[str] = None
 ):
     """Get all articles for admin dashboard with filters and pagination"""
     query = db.query(Article)
@@ -65,6 +66,7 @@ async def get_all_articles(
     if category: query = query.filter(Article.category == category)
     if date_from: query = query.filter(Article.created_at >= datetime.fromisoformat(date_from.replace('Z', '+00:00')))
     if date_to: query = query.filter(Article.created_at <= datetime.fromisoformat(date_to.replace('Z', '+00:00')))
+    if search: query = query.filter((Article.title.ilike(f'%{search}%')) | (Article.content.ilike(f'%{search}%')))
     
     total = query.count()
     articles = query.order_by(Article.created_at.desc()).offset(skip).limit(limit).all()
@@ -136,3 +138,51 @@ async def bulk_delete_articles(article_ids: List[int], db: Session = Depends(get
     deleted = db.query(Article).filter(Article.id.in_(article_ids)).delete(synchronize_session=False)
     db.commit()
     return {"message": f"{deleted} articles deleted", "deleted_count": deleted}
+
+@router.get("/users", response_model=List[dict])
+async def get_users(skip: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=100), search: Optional[str] = None, db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):
+    """Get all users"""
+    query = db.query(User)
+    if search: query = query.filter((User.username.ilike(f'%{search}%')) | (User.email.ilike(f'%{search}%')))
+    users = query.offset(skip).limit(limit).all()
+    return [{
+        "id": u.id, "username": u.username, "email": u.email, "full_name": u.full_name,
+        "is_admin": u.is_admin, "created_at": u.created_at.isoformat() if u.created_at else None,
+        "articles_count": db.query(Article).filter(Article.author_id == u.id).count()
+    } for u in users]
+
+@router.get("/users/{user_id}")
+async def get_user(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):
+    """Get user details"""
+    from app.utils import get_or_404
+    user = get_or_404(db, User, user_id)
+    return {
+        "id": user.id, "username": user.username, "email": user.email, "full_name": user.full_name,
+        "is_admin": user.is_admin, "created_at": user.created_at.isoformat() if user.created_at else None,
+        "articles_count": db.query(Article).filter(Article.author_id == user.id).count()
+    }
+
+@router.put("/users/{user_id}")
+async def update_user(user_id: int, data: UserUpdate, db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):
+    """Update user"""
+    from app.utils import get_or_404, update_model
+    user = get_or_404(db, User, user_id)
+    return update_model(db, user, data.dict(exclude_unset=True))
+
+@router.post("/users/{user_id}/toggle-admin")
+async def toggle_admin(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):
+    """Toggle admin role"""
+    from app.utils import get_or_404
+    user = get_or_404(db, User, user_id)
+    user.is_admin = not user.is_admin
+    db.commit()
+    return {"message": f"Admin status: {user.is_admin}", "is_admin": user.is_admin}
+
+@router.delete("/users/{user_id}")
+async def delete_user(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):
+    """Delete user"""
+    from app.utils import get_or_404, delete_model
+    user = get_or_404(db, User, user_id)
+    if db.query(Article).filter(Article.author_id == user_id).count() > 0:
+        raise HTTPException(status_code=400, detail="Cannot delete user with articles")
+    return delete_model(db, user)

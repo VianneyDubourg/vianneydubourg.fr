@@ -86,6 +86,20 @@ class LumièreAPI {
         return this.request(`/spots/${id}`);
     }
 
+    async createSpot(spot) {
+        return this.request('/spots', {
+            method: 'POST',
+            body: JSON.stringify(spot)
+        });
+    }
+
+    async updateSpot(id, spot) {
+        return this.request(`/spots/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(spot)
+        });
+    }
+
     // Auth
     async login(username, password) {
         const formData = new FormData();

@@ -225,5 +225,8 @@ function switchAdminSection(section) {
         activeLink.classList.remove('text-zinc-500');
     }
     if (section === 'overview') loadAdminArticles();
+    else if (section === 'articles') loadArticlesList();
+    else if (section === 'spots') loadSpotsList();
     else if (section === 'comments') loadComments();
+    else if (section === 'users') loadUsers();
 }

@@ -142,3 +142,8 @@ class CommentResponse(CommentBase):
 # Newsletter Schema
 class NewsletterSubscribe(BaseModel):
     email: EmailStr
+
+# Admin User Update Schema
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = None
