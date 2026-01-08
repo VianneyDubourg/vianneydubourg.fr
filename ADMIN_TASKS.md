@@ -9,20 +9,20 @@
 ### 🔴 À faire
 
 #### 1. Stats Cards - Tendances
-- [ ] Calculer les pourcentages de variation (vs mois dernier)
-- [ ] API: Ajouter `trend_views`, `trend_spots`, `trend_subscribers` dans `/api/admin/stats`
-- [ ] Frontend: Afficher les tendances avec icônes up/down selon le signe
+- [x] Calculer les pourcentages de variation (vs mois dernier)
+- [x] API: Ajouter `trend_views`, `trend_spots`, `trend_subscribers` dans `/api/admin/stats`
+- [x] Frontend: Afficher les tendances avec icônes up/down selon le signe
 
 #### 2. Tableau Articles - Données dynamiques
-- [ ] API: Utiliser `/api/admin/articles` existant
-- [ ] Frontend: Remplacer données statiques par appel API
-- [ ] Afficher cover_image, auteur avec avatar, statut avec badge coloré
-- [ ] Formater les dates (ex: "12 Oct 2023", "Aujourd'hui")
+- [x] API: Utiliser `/api/admin/articles` existant
+- [x] Frontend: Remplacer données statiques par appel API
+- [x] Afficher cover_image, auteur avec avatar, statut avec badge coloré
+- [x] Formater les dates (ex: "12 Oct 2023", "Aujourd'hui")
 
 #### 3. Tableau Articles - Sélection multiple
-- [ ] Gérer état des checkboxes (sélection individuelle + tout sélectionner)
-- [ ] API: Créer `/api/admin/articles/bulk-delete` (suppression multiple)
-- [ ] Frontend: Afficher barre d'actions quand items sélectionnés
+- [x] Gérer état des checkboxes (sélection individuelle + tout sélectionner)
+- [x] API: Créer `/api/admin/articles/bulk-delete` (suppression multiple)
+- [x] Frontend: Afficher barre d'actions quand items sélectionnés
 
 #### 4. Tableau Articles - Filtres
 - [ ] Bouton filtre: Ouvrir modal/dropdown avec options (Statut, Catégorie, Date)

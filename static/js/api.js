@@ -140,6 +140,10 @@ class LumièreAPI {
         return this.request('/admin/articles');
     }
 
+    async getAllArticles() {
+        return this.request('/admin/articles');
+    }
+
     async getComments() {
         return this.request('/admin/comments');
     }

@@ -116,7 +116,10 @@ function switchTab(tab) {
         document.getElementById('view-spots')?.classList.remove('flex');
     }
     
-    if (tab === 'admin') loadAdminStats();
+    if (tab === 'admin') {
+        loadAdminStats();
+        loadAdminArticles();
+    }
     window.scrollTo(0, 0);
 }
 
@@ -124,11 +127,18 @@ function switchTab(tab) {
 async function loadAdminStats() {
     try {
         const stats = await api.getAdminStats();
-        const statsCards = document.querySelectorAll('#view-admin .bg-white.p-5');
-        if (statsCards.length >= 3) {
-            statsCards[0].querySelector('.text-2xl').textContent = stats.total_views.toLocaleString();
-            statsCards[1].querySelector('.text-2xl').textContent = stats.total_spots;
-            statsCards[2].querySelector('.text-2xl').textContent = stats.total_subscribers;
+        const cards = document.querySelectorAll('#view-admin .bg-white.p-5');
+        const trends = [stats.trend_views, stats.trend_spots, stats.trend_subscribers];
+        if (cards.length >= 3) {
+            [stats.total_views.toLocaleString(), stats.total_spots, stats.total_subscribers].forEach((v, i) => {
+                cards[i].querySelector('.text-2xl').textContent = v;
+                const trendEl = cards[i].querySelector('.text-emerald-600');
+                if (trendEl) {
+                    const trend = trends[i];
+                    trendEl.innerHTML = `<span class="iconify mr-1" data-icon="lucide:${trend >= 0 ? 'trending-up' : 'trending-down'}" data-width="12"></span> ${Math.abs(trend)}%`;
+                    trendEl.className = trend >= 0 ? 'text-emerald-600 font-medium flex items-center' : 'text-red-600 font-medium flex items-center';
+                }
+            });
         }
     } catch (error) {
         console.error('Error loading admin stats:', error);

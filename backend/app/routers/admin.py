@@ -4,6 +4,7 @@ Admin API routes
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from datetime import datetime, timedelta
 from typing import List
 
 from app.database import get_db
@@ -14,43 +15,52 @@ from app.auth import get_current_admin_user
 router = APIRouter()
 
 
+def _calc_trend(current, previous):
+    return round(((current - previous) / previous * 100) if previous > 0 else 0, 1)
+
+
 @router.get("/stats")
-async def get_stats(
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_admin_user)
-):
+async def get_stats(db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):
     """Get dashboard statistics"""
+    now = datetime.utcnow()
+    last_month = now - timedelta(days=30)
+    
     total_views = db.query(func.sum(Article.views)).scalar() or 0
+    views_last_month = db.query(func.sum(Article.views)).filter(Article.created_at >= last_month).scalar() or 0
+    views_previous = total_views - views_last_month
+    
     total_spots = db.query(Spot).count()
+    spots_last_month = db.query(Spot).filter(Spot.created_at >= last_month).count()
+    spots_previous = total_spots - spots_last_month
+    
     total_subscribers = db.query(Newsletter).filter(Newsletter.is_active == True).count()
-    pending_comments = db.query(Comment).filter(Comment.is_approved == False).count()
+    subs_last_month = db.query(Newsletter).filter(Newsletter.subscribed_at >= last_month, Newsletter.is_active == True).count()
+    subs_previous = total_subscribers - subs_last_month
     
     return {
         "total_views": int(total_views),
         "total_spots": total_spots,
         "total_subscribers": total_subscribers,
-        "pending_comments": pending_comments
+        "pending_comments": db.query(Comment).filter(Comment.is_approved == False).count(),
+        "trend_views": _calc_trend(total_views, views_previous),
+        "trend_spots": _calc_trend(total_spots, spots_previous),
+        "trend_subscribers": _calc_trend(total_subscribers, subs_previous)
     }
 
 
 @router.get("/articles", response_model=List[dict])
-async def get_all_articles(
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_admin_user)
-):
+async def get_all_articles(db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):
     """Get all articles for admin dashboard"""
-    articles = db.query(Article).order_by(Article.created_at.desc()).all()
-    result = []
-    for article in articles:
-        result.append({
-            "id": article.id,
-            "title": article.title,
-            "author": article.author.full_name or article.author.username if article.author else "Unknown",
-            "status": article.status.value,
-            "created_at": article.created_at.isoformat() if article.created_at else None,
-            "views": article.views
-        })
-    return result
+    return [{
+        "id": a.id,
+        "title": a.title,
+        "cover_image": a.cover_image,
+        "author": a.author.full_name or a.author.username if a.author else "Unknown",
+        "author_initials": (a.author.full_name or a.author.username)[:2].upper() if a.author else "??",
+        "status": a.status.value,
+        "created_at": a.created_at.isoformat() if a.created_at else None,
+        "views": a.views
+    } for a in db.query(Article).order_by(Article.created_at.desc()).all()]
 
 
 @router.get("/comments")
@@ -91,16 +101,14 @@ async def approve_comment(
 
 
 @router.delete("/comments/{comment_id}")
-async def delete_comment(
-    comment_id: int,
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_admin_user)
-):
+async def delete_comment(comment_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):
     """Delete a comment"""
-    comment = db.query(Comment).filter(Comment.id == comment_id).first()
-    if not comment:
-        raise HTTPException(status_code=404, detail="Comment not found")
-    
-    db.delete(comment)
+    from app.utils import get_or_404, delete_model
+    return delete_model(db, get_or_404(db, Comment, comment_id))
+
+@router.post("/articles/bulk-delete")
+async def bulk_delete_articles(article_ids: List[int], db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):
+    """Bulk delete articles"""
+    deleted = db.query(Article).filter(Article.id.in_(article_ids)).delete(synchronize_session=False)
     db.commit()
-    return {"message": "Comment deleted"}
+    return {"message": f"{deleted} articles deleted", "deleted_count": deleted}
