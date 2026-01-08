@@ -119,6 +119,8 @@ function switchTab(tab) {
     if (tab === 'admin') {
         loadAdminStats();
         loadAdminArticles();
+        loadComments();
+        switchAdminSection('overview');
     }
     window.scrollTo(0, 0);
 }

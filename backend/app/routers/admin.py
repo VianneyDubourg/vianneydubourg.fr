@@ -102,20 +102,27 @@ async def get_comments(
 
 
 @router.post("/comments/{comment_id}/approve")
-async def approve_comment(
-    comment_id: int,
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_admin_user)
-):
+async def approve_comment(comment_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):
     """Approve a comment"""
-    comment = db.query(Comment).filter(Comment.id == comment_id).first()
-    if not comment:
-        raise HTTPException(status_code=404, detail="Comment not found")
-    
+    from app.utils import get_or_404
+    comment = get_or_404(db, Comment, comment_id)
     comment.is_approved = True
     db.commit()
     return {"message": "Comment approved"}
 
+@router.post("/comments/bulk-approve")
+async def bulk_approve_comments(comment_ids: List[int], db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):
+    """Bulk approve comments"""
+    db.query(Comment).filter(Comment.id.in_(comment_ids)).update({"is_approved": True}, synchronize_session=False)
+    db.commit()
+    return {"message": f"{len(comment_ids)} comments approved"}
+
+@router.post("/comments/bulk-delete")
+async def bulk_delete_comments(comment_ids: List[int], db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):
+    """Bulk delete comments"""
+    deleted = db.query(Comment).filter(Comment.id.in_(comment_ids)).delete(synchronize_session=False)
+    db.commit()
+    return {"message": f"{deleted} comments deleted", "deleted_count": deleted}
 
 @router.delete("/comments/{comment_id}")
 async def delete_comment(comment_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):

@@ -211,3 +211,19 @@ function changePage(direction) {
     else if (direction === 'next' && adminFilters.skip + adminFilters.limit < adminTotal) adminFilters.skip += adminFilters.limit;
     loadAdminArticles();
 }
+
+function switchAdminSection(section) {
+    document.querySelectorAll('[id^="admin-section-"]').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`admin-section-${section}`)?.classList.remove('hidden');
+    document.querySelectorAll('#view-admin a').forEach(el => {
+        el.classList.remove('bg-white', 'text-zinc-900', 'shadow-sm', 'border', 'border-zinc-200');
+        el.classList.add('text-zinc-500');
+    });
+    const activeLink = event?.target?.closest('a') || document.querySelector(`#view-admin a[onclick*="${section}"]`);
+    if (activeLink) {
+        activeLink.classList.add('bg-white', 'text-zinc-900', 'shadow-sm', 'border', 'border-zinc-200');
+        activeLink.classList.remove('text-zinc-500');
+    }
+    if (section === 'overview') loadAdminArticles();
+    else if (section === 'comments') loadComments();
+}

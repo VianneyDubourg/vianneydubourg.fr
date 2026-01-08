@@ -119,24 +119,24 @@
 ### 🔴 À faire
 
 #### 1. Navigation & Layout
-- [ ] Créer vue `view-admin-comments` dans HTML
-- [ ] Router: Ajouter `switchAdminSection('comments')`
-- [ ] Sidebar: Badge dynamique avec compteur pending (utiliser `pending_comments` des stats)
+- [x] Créer vue `view-admin-comments` dans HTML
+- [x] Router: Ajouter `switchAdminSection('comments')`
+- [x] Sidebar: Badge dynamique avec compteur pending (utiliser `pending_comments` des stats)
 
 #### 2. Liste Commentaires
-- [ ] Tableau: Auteur, Contenu, Article (lien), Date, Statut, Actions
-- [ ] API: Utiliser `/api/admin/comments` existant
-- [ ] Filtrer: Afficher pending en premier, puis tous
+- [x] Tableau: Auteur, Contenu, Article (lien), Date, Statut, Actions
+- [x] API: Utiliser `/api/admin/comments` existant
+- [x] Filtrer: Afficher pending en premier, puis tous
 
 #### 3. Actions Modération
-- [ ] Bouton "Approuver": Appel `/api/admin/comments/{id}/approve`
-- [ ] Bouton "Supprimer": Confirmation puis `/api/admin/comments/{id}`
-- [ ] Actions groupées: Approuver/Supprimer sélection multiple
-- [ ] API: `/api/admin/comments/bulk-approve`, `/api/admin/comments/bulk-delete`
+- [x] Bouton "Approuver": Appel `/api/admin/comments/{id}/approve`
+- [x] Bouton "Supprimer": Confirmation puis `/api/admin/comments/{id}`
+- [x] Actions groupées: Approuver/Supprimer sélection multiple
+- [x] API: `/api/admin/comments/bulk-approve`, `/api/admin/comments/bulk-delete`
 
 #### 4. Badge Compteur
-- [ ] Mettre à jour badge sidebar en temps réel après modération
-- [ ] Recharger stats après chaque action
+- [x] Mettre à jour badge sidebar en temps réel après modération
+- [x] Recharger stats après chaque action
 
 ---
 
