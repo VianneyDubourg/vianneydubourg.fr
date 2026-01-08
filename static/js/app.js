@@ -127,6 +127,10 @@ function switchTab(tab) {
 }
 
 async function checkAdminAuth() {
+    if (!api.token) {
+        document.getElementById('login-modal')?.classList.remove('hidden');
+        return;
+    }
     try {
         const user = await api.getCurrentUser();
         if (!user.is_admin) {
@@ -134,9 +138,49 @@ async function checkAdminAuth() {
             setTimeout(() => switchTab('home'), 2000);
         }
     } catch (error) {
-        showToast('Veuillez vous connecter', 'error');
-        setTimeout(() => switchTab('home'), 2000);
+        document.getElementById('login-modal')?.classList.remove('hidden');
     }
+}
+
+async function doLogin() {
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+    if (!username || !password) {
+        showToast('Veuillez remplir tous les champs', 'error');
+        return;
+    }
+    try {
+        await api.login(username, password);
+        const user = await api.getCurrentUser();
+        if (!user.is_admin) {
+            api.logout();
+            showToast('Accès refusé. Droits administrateur requis.', 'error');
+            return;
+        }
+        closeLoginModal();
+        showToast('Connexion réussie', 'success');
+        loadAdminStats();
+        loadAdminArticles();
+        loadComments();
+    } catch (error) {
+        showToast('Identifiants incorrects', 'error');
+    }
+}
+
+// Allow Enter key to submit login
+document.addEventListener('DOMContentLoaded', () => {
+    const loginModal = document.getElementById('login-modal');
+    if (loginModal) {
+        loginModal.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !loginModal.classList.contains('hidden')) {
+                doLogin();
+            }
+        });
+    }
+});
+
+function closeLoginModal() {
+    document.getElementById('login-modal')?.classList.add('hidden');
 }
 
 // Load admin statistics
