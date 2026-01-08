@@ -35,7 +35,9 @@ app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 
 # Serve static files (HTML, CSS, JS)
-static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..")
+# Get project root (parent of backend directory)
+backend_dir = os.path.dirname(os.path.dirname(__file__))
+static_dir = os.path.dirname(backend_dir) if os.path.basename(backend_dir) == 'backend' else backend_dir
 static_files_dir = os.path.join(static_dir, "static")
 if os.path.exists(static_files_dir):
     app.mount("/static", StaticFiles(directory=static_files_dir), name="static")
