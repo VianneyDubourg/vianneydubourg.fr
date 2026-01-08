@@ -9,6 +9,7 @@ from app.database import get_db
 from app.models import Spot, SpotCategory
 from app.schemas import SpotResponse, SpotCreate, SpotUpdate
 from app.auth import get_current_admin_user
+from app.utils import get_or_404, update_model, delete_model
 
 router = APIRouter()
 
@@ -43,10 +44,7 @@ async def get_spots(
 @router.get("/{spot_id}", response_model=SpotResponse)
 async def get_spot(spot_id: int, db: Session = Depends(get_db)):
     """Get a single spot by ID"""
-    spot = db.query(Spot).filter(Spot.id == spot_id).first()
-    if not spot:
-        raise HTTPException(status_code=404, detail="Spot not found")
-    return spot
+    return get_or_404(db, Spot, spot_id)
 
 
 @router.post("/", response_model=SpotResponse)
@@ -71,17 +69,8 @@ async def update_spot(
     current_user = Depends(get_current_admin_user)
 ):
     """Update a spot (admin only)"""
-    db_spot = db.query(Spot).filter(Spot.id == spot_id).first()
-    if not db_spot:
-        raise HTTPException(status_code=404, detail="Spot not found")
-    
-    update_data = spot_update.dict(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(db_spot, field, value)
-    
-    db.commit()
-    db.refresh(db_spot)
-    return db_spot
+    db_spot = get_or_404(db, Spot, spot_id)
+    return update_model(db, db_spot, spot_update.dict(exclude_unset=True))
 
 
 @router.delete("/{spot_id}")
@@ -91,10 +80,4 @@ async def delete_spot(
     current_user = Depends(get_current_admin_user)
 ):
     """Delete a spot (admin only)"""
-    db_spot = db.query(Spot).filter(Spot.id == spot_id).first()
-    if not db_spot:
-        raise HTTPException(status_code=404, detail="Spot not found")
-    
-    db.delete(db_spot)
-    db.commit()
-    return {"message": "Spot deleted successfully"}
+    return delete_model(db, get_or_404(db, Spot, spot_id))
