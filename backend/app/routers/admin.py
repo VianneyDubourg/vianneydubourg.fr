@@ -1,14 +1,14 @@
 """
 Admin API routes
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional
 
 from app.database import get_db
-from app.models import Article, Spot, User, Newsletter, Comment
+from app.models import Article, Spot, User, Newsletter, Comment, ArticleStatus
 from app.schemas import UserResponse
 from app.auth import get_current_admin_user
 
@@ -48,19 +48,36 @@ async def get_stats(db: Session = Depends(get_db), current_user = Depends(get_cu
     }
 
 
-@router.get("/articles", response_model=List[dict])
-async def get_all_articles(db: Session = Depends(get_db), current_user = Depends(get_current_admin_user)):
-    """Get all articles for admin dashboard"""
-    return [{
-        "id": a.id,
-        "title": a.title,
-        "cover_image": a.cover_image,
-        "author": a.author.full_name or a.author.username if a.author else "Unknown",
-        "author_initials": (a.author.full_name or a.author.username)[:2].upper() if a.author else "??",
-        "status": a.status.value,
-        "created_at": a.created_at.isoformat() if a.created_at else None,
-        "views": a.views
-    } for a in db.query(Article).order_by(Article.created_at.desc()).all()]
+@router.get("/articles", response_model=dict)
+async def get_all_articles(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_admin_user),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    status: Optional[ArticleStatus] = None,
+    category: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None
+):
+    """Get all articles for admin dashboard with filters and pagination"""
+    query = db.query(Article)
+    if status: query = query.filter(Article.status == status)
+    if category: query = query.filter(Article.category == category)
+    if date_from: query = query.filter(Article.created_at >= datetime.fromisoformat(date_from.replace('Z', '+00:00')))
+    if date_to: query = query.filter(Article.created_at <= datetime.fromisoformat(date_to.replace('Z', '+00:00')))
+    
+    total = query.count()
+    articles = query.order_by(Article.created_at.desc()).offset(skip).limit(limit).all()
+    
+    return {
+        "items": [{
+            "id": a.id, "title": a.title, "cover_image": a.cover_image,
+            "author": a.author.full_name or a.author.username if a.author else "Unknown",
+            "author_initials": (a.author.full_name or a.author.username)[:2].upper() if a.author else "??",
+            "status": a.status.value, "created_at": a.created_at.isoformat() if a.created_at else None, "views": a.views
+        } for a in articles],
+        "total": total, "skip": skip, "limit": limit
+    }
 
 
 @router.get("/comments")

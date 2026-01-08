@@ -343,11 +343,11 @@ border-color: #2563eb;
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <h2 class="text-2xl font-semibold tracking-tight text-zinc-900">Tableau de bord</h2>
                             <div class="flex items-center space-x-3">
-                                <button class="px-4 py-2 bg-white border border-zinc-200 text-zinc-600 rounded-lg text-sm font-medium hover:bg-zinc-50 shadow-sm flex items-center gap-2">
+                                <button onclick="exportArticles()" class="px-4 py-2 bg-white border border-zinc-200 text-zinc-600 rounded-lg text-sm font-medium hover:bg-zinc-50 shadow-sm flex items-center gap-2">
                                     <span class="iconify" data-icon="lucide:download" data-width="14"></span>
                                     Exporter
                                 </button>
-                                <button class="px-4 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-800 shadow-sm flex items-center gap-2">
+                                <button onclick="createArticle()" class="px-4 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-800 shadow-sm flex items-center gap-2">
                                     <span class="iconify" data-icon="lucide:plus" data-width="14"></span>
                                     Créer
                                 </button>
@@ -416,11 +416,8 @@ border-color: #2563eb;
                             <div class="px-6 py-4 border-b border-zinc-200 flex justify-between items-center bg-zinc-50/30">
                                 <h3 class="text-sm font-semibold text-zinc-900">Articles récents</h3>
                                 <div class="flex items-center space-x-2">
-                                    <button class="text-zinc-400 hover:text-zinc-600">
+                                    <button onclick="showFilters()" class="text-zinc-400 hover:text-zinc-600">
                                         <span class="iconify" data-icon="lucide:filter" data-width="16"></span>
-                                    </button>
-                                    <button class="text-zinc-400 hover:text-zinc-600">
-                                        <span class="iconify" data-icon="lucide:more-horizontal" data-width="16"></span>
                                     </button>
                                 </div>
                             </div>
@@ -505,8 +502,8 @@ border-color: #2563eb;
                             <div class="px-6 py-4 border-t border-zinc-200 bg-zinc-50 flex items-center justify-between">
                                 <span class="text-xs text-zinc-500">Affichage 1-2 de 12 articles</span>
                                 <div class="flex space-x-1">
-                                    <button class="px-2 py-1 border border-zinc-200 rounded bg-white text-zinc-400 hover:text-zinc-900 text-xs disabled:opacity-50" disabled="">Préc.</button>
-                                    <button class="px-2 py-1 border border-zinc-200 rounded bg-white text-zinc-600 hover:text-zinc-900 text-xs">Suiv.</button>
+                                    <button onclick="changePage('prev')" class="px-2 py-1 border border-zinc-200 rounded bg-white text-zinc-400 hover:text-zinc-900 text-xs disabled:opacity-50">Préc.</button>
+                                    <button onclick="changePage('next')" class="px-2 py-1 border border-zinc-200 rounded bg-white text-zinc-600 hover:text-zinc-900 text-xs">Suiv.</button>
                                 </div>
                             </div>
                         </div>
@@ -517,6 +514,85 @@ border-color: #2563eb;
         </div>
 
     </main>
+
+    <!-- Filters Modal -->
+    <div id="filters-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-zinc-900">Filtres</h3>
+                <button onclick="closeFilters()" class="text-zinc-400 hover:text-zinc-900">
+                    <span class="iconify" data-icon="lucide:x" data-width="20"></span>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 mb-2">Statut</label>
+                    <select id="filter-status" class="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm">
+                        <option value="">Tous</option>
+                        <option value="published">Publié</option>
+                        <option value="draft">Brouillon</option>
+                        <option value="review">Relecture</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 mb-2">Catégorie</label>
+                    <input id="filter-category" type="text" placeholder="Catégorie" class="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="adminFilters.status=document.getElementById('filter-status').value; adminFilters.category=document.getElementById('filter-category').value; applyFilters(); closeFilters();" class="flex-1 px-4 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-800">Appliquer</button>
+                <button onclick="adminFilters.status=''; adminFilters.category=''; applyFilters(); closeFilters();" class="px-4 py-2 bg-white border border-zinc-200 text-zinc-600 rounded-lg text-sm font-medium hover:bg-zinc-50">Réinitialiser</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Article Modal -->
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-zinc-900">Éditer l'article</h3>
+                <button onclick="closeEditModal()" class="text-zinc-400 hover:text-zinc-900">
+                    <span class="iconify" data-icon="lucide:x" data-width="20"></span>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 mb-2">Titre</label>
+                    <input id="edit-title" type="text" class="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 mb-2">Extrait</label>
+                    <textarea id="edit-excerpt" rows="2" class="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 mb-2">Contenu</label>
+                    <textarea id="edit-content" rows="6" class="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-700 mb-2">Catégorie</label>
+                        <input id="edit-category" type="text" class="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-700 mb-2">Statut</label>
+                        <select id="edit-status" class="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm">
+                            <option value="draft">Brouillon</option>
+                            <option value="published">Publié</option>
+                            <option value="review">Relecture</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 mb-2">Image de couverture (URL)</label>
+                    <input id="edit-cover-image" type="text" class="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="saveArticle()" class="flex-1 px-4 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-800">Enregistrer</button>
+                <button onclick="closeEditModal()" class="px-4 py-2 bg-white border border-zinc-200 text-zinc-600 rounded-lg text-sm font-medium hover:bg-zinc-50">Annuler</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer (Only on Home View) -->
     <footer id="footer-main" class="bg-white border-t border-zinc-200 pt-12 pb-8">

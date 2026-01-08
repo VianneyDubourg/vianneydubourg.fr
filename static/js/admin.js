@@ -1,7 +1,7 @@
 /**
  * Admin dashboard functionality
  */
-let adminArticles = [];
+let adminArticles = [], adminFilters = { skip: 0, limit: 20 }, adminTotal = 0;
 
 const STATUS_COLORS = {
     'published': 'bg-emerald-50 text-emerald-700 border-emerald-100',
@@ -22,11 +22,34 @@ function formatDate(dateStr) {
 
 async function loadAdminArticles() {
     try {
-        adminArticles = await api.getAllArticles();
+        const params = new URLSearchParams();
+        Object.entries(adminFilters).forEach(([k, v]) => v && params.append(k, v));
+        const data = await api.request(`/admin/articles?${params.toString()}`);
+        adminArticles = data.items || [];
+        adminTotal = data.total || 0;
         renderAdminArticles();
+        updatePagination();
     } catch (error) {
         console.error('Error loading admin articles:', error);
     }
+}
+
+function applyFilters() {
+    adminFilters.skip = 0;
+    loadAdminArticles();
+}
+
+function showFilters() {
+    const modal = document.getElementById('filters-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        if (adminFilters.status) document.getElementById('filter-status').value = adminFilters.status;
+        if (adminFilters.category) document.getElementById('filter-category').value = adminFilters.category;
+    }
+}
+
+function closeFilters() {
+    document.getElementById('filters-modal')?.classList.add('hidden');
 }
 
 function renderAdminArticles() {
@@ -103,7 +126,88 @@ async function bulkDeleteArticles() {
     }
 }
 
-function editArticle(id) {
-    console.log('Edit article:', id);
-    // TODO: Implement edit modal
+let currentEditArticle = null;
+
+async function editArticle(id) {
+    try {
+        const article = await api.getArticle(id);
+        currentEditArticle = article;
+        document.getElementById('edit-title').value = article.title;
+        document.getElementById('edit-excerpt').value = article.excerpt || '';
+        document.getElementById('edit-content').value = article.content || '';
+        document.getElementById('edit-category').value = article.category || '';
+        document.getElementById('edit-status').value = article.status;
+        document.getElementById('edit-cover-image').value = article.cover_image || '';
+        document.getElementById('edit-modal').classList.remove('hidden');
+    } catch (error) {
+        alert('Erreur lors du chargement de l\'article');
+    }
+}
+
+function closeEditModal() {
+    document.getElementById('edit-modal')?.classList.add('hidden');
+    currentEditArticle = null;
+    document.querySelector('#edit-modal h3').textContent = 'Éditer l\'article';
+}
+
+function exportArticles() {
+    const csv = ['Titre,Auteur,Statut,Vues,Date'].concat(
+        adminArticles.map(a => `"${a.title}","${a.author}","${a.status}",${a.views},"${a.created_at}"`)
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `articles-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function createArticle() {
+    currentEditArticle = null;
+    document.getElementById('edit-title').value = '';
+    document.getElementById('edit-excerpt').value = '';
+    document.getElementById('edit-content').value = '';
+    document.getElementById('edit-category').value = '';
+    document.getElementById('edit-status').value = 'draft';
+    document.getElementById('edit-cover-image').value = '';
+    document.getElementById('edit-modal').classList.remove('hidden');
+    document.querySelector('#edit-modal h3').textContent = 'Créer un article';
+}
+
+async function saveArticle() {
+    const data = {
+        title: document.getElementById('edit-title').value,
+        excerpt: document.getElementById('edit-excerpt').value,
+        content: document.getElementById('edit-content').value,
+        category: document.getElementById('edit-category').value,
+        status: document.getElementById('edit-status').value,
+        cover_image: document.getElementById('edit-cover-image').value
+    };
+    try {
+        if (currentEditArticle) {
+            await api.updateArticle(currentEditArticle.id, data);
+        } else {
+            await api.createArticle(data);
+        }
+        await loadAdminArticles();
+        closeEditModal();
+    } catch (error) {
+        alert('Erreur lors de la sauvegarde');
+    }
+}
+
+function updatePagination() {
+    const info = document.querySelector('#view-admin .px-6.py-4.border-t span');
+    const prevBtn = document.querySelector('#view-admin .px-6.py-4.border-t button:first-of-type');
+    const nextBtn = document.querySelector('#view-admin .px-6.py-4.border-t button:last-of-type');
+    if (info) info.textContent = `Affichage ${adminFilters.skip + 1}-${Math.min(adminFilters.skip + adminFilters.limit, adminTotal)} de ${adminTotal} articles`;
+    if (prevBtn) prevBtn.disabled = adminFilters.skip === 0;
+    if (nextBtn) nextBtn.disabled = adminFilters.skip + adminFilters.limit >= adminTotal;
+}
+
+function changePage(direction) {
+    if (direction === 'prev' && adminFilters.skip > 0) adminFilters.skip -= adminFilters.limit;
+    else if (direction === 'next' && adminFilters.skip + adminFilters.limit < adminTotal) adminFilters.skip += adminFilters.limit;
+    loadAdminArticles();
 }

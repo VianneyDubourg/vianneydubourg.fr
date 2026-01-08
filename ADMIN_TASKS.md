@@ -25,24 +25,24 @@
 - [x] Frontend: Afficher barre d'actions quand items sélectionnés
 
 #### 4. Tableau Articles - Filtres
-- [ ] Bouton filtre: Ouvrir modal/dropdown avec options (Statut, Catégorie, Date)
-- [ ] API: Ajouter params `status`, `category`, `date_from`, `date_to` à `/api/admin/articles`
-- [ ] Frontend: Appliquer filtres et recharger tableau
+- [x] Bouton filtre: Ouvrir modal/dropdown avec options (Statut, Catégorie, Date)
+- [x] API: Ajouter params `status`, `category`, `date_from`, `date_to` à `/api/admin/articles`
+- [x] Frontend: Appliquer filtres et recharger tableau
 
 #### 5. Tableau Articles - Actions
-- [ ] Bouton "Éditer": Ouvrir modal/rediriger vers formulaire édition
-- [ ] API: Utiliser `/api/articles/{id}` (GET/PUT) existant
-- [ ] Frontend: Formulaire modal pour éditer article
+- [x] Bouton "Éditer": Ouvrir modal/rediriger vers formulaire édition
+- [x] API: Utiliser `/api/articles/{id}` (GET/PUT) existant
+- [x] Frontend: Formulaire modal pour éditer article
 
 #### 6. Tableau Articles - Pagination
-- [ ] API: Ajouter `skip`, `limit`, `total` dans réponse `/api/admin/articles`
-- [ ] Frontend: Calculer nombre de pages, activer/désactiver boutons Préc/Suiv
-- [ ] Gérer changement de page
+- [x] API: Ajouter `skip`, `limit`, `total` dans réponse `/api/admin/articles`
+- [x] Frontend: Calculer nombre de pages, activer/désactiver boutons Préc/Suiv
+- [x] Gérer changement de page
 
 #### 7. Boutons Header
-- [ ] "Exporter": Générer CSV/JSON des articles, télécharger fichier
-- [ ] "Créer": Ouvrir modal formulaire création article
-- [ ] API: Utiliser `/api/articles/` (POST) existant
+- [x] "Exporter": Générer CSV/JSON des articles, télécharger fichier
+- [x] "Créer": Ouvrir modal formulaire création article
+- [x] API: Utiliser `/api/articles/` (POST) existant
 
 ---
 
