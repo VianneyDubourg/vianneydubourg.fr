@@ -1,0 +1,5 @@
+combien de ligne de code ?
+
+attention le but est de créé le code en mettant le moins de ligne possible pour eviter les repetitions et garder un code propre
+
+ne code pas
