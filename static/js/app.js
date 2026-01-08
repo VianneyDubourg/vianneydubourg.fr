@@ -117,12 +117,26 @@ function switchTab(tab) {
     }
     
     if (tab === 'admin') {
+        checkAdminAuth();
         loadAdminStats();
         loadAdminArticles();
         loadComments();
         switchAdminSection('overview');
     }
     window.scrollTo(0, 0);
+}
+
+async function checkAdminAuth() {
+    try {
+        const user = await api.getCurrentUser();
+        if (!user.is_admin) {
+            showToast('Accès refusé. Droits administrateur requis.', 'error');
+            setTimeout(() => switchTab('home'), 2000);
+        }
+    } catch (error) {
+        showToast('Veuillez vous connecter', 'error');
+        setTimeout(() => switchTab('home'), 2000);
+    }
 }
 
 // Load admin statistics

@@ -50,9 +50,10 @@ function renderComments() {
 async function approveComment(id) {
     try {
         await api.request(`/admin/comments/${id}/approve`, { method: 'POST' });
+        showToast('Commentaire approuvé', 'success');
         await loadComments();
     } catch (error) {
-        alert('Erreur lors de l\'approbation');
+        // Error handled by handleApiError
     }
 }
 
@@ -60,9 +61,10 @@ async function deleteComment(id) {
     if (!confirm('Supprimer ce commentaire ?')) return;
     try {
         await api.request(`/admin/comments/${id}`, { method: 'DELETE' });
+        showToast('Commentaire supprimé', 'success');
         await loadComments();
     } catch (error) {
-        alert('Erreur lors de la suppression');
+        // Error handled by handleApiError
     }
 }
 

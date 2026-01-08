@@ -26,13 +26,18 @@ class LumièreAPI {
             });
 
             if (!response.ok) {
-                const error = await response.json().catch(() => ({ detail: 'An error occurred' }));
-                throw new Error(error.detail || `HTTP error! status: ${response.status}`);
+                if (response.status === 401) {
+                    this.logout();
+                    window.location.href = '/';
+                    throw new Error('Session expirée. Veuillez vous reconnecter.');
+                }
+                const error = await response.json().catch(() => ({ detail: 'Une erreur est survenue' }));
+                throw new Error(error.detail || `Erreur ${response.status}`);
             }
 
             return await response.json();
         } catch (error) {
-            console.error('API request failed:', error);
+            if (typeof handleApiError === 'function') handleApiError(error);
             throw error;
         }
     }
@@ -129,6 +134,7 @@ class LumièreAPI {
     }
 
     async getCurrentUser() {
+        if (!this.token) throw new Error('Non authentifié');
         return this.request('/auth/me');
     }
 

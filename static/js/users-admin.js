@@ -10,7 +10,7 @@ async function loadUsers() {
         usersData = await api.request(`/admin/users?${params.toString()}`);
         renderUsers();
     } catch (error) {
-        console.error('Error loading users:', error);
+        // Error handled by handleApiError
     }
 }
 
@@ -85,7 +85,7 @@ async function editUser(id) {
         currentEditUser = id;
         document.getElementById('user-modal').classList.remove('hidden');
     } catch (error) {
-        alert('Erreur lors du chargement');
+        // Error handled by handleApiError
     }
 }
 
@@ -101,10 +101,11 @@ async function saveUser() {
                 full_name: document.getElementById('user-fullname').value
             })
         });
+        showToast('Utilisateur modifié', 'success');
         await loadUsers();
         closeUserModal();
     } catch (error) {
-        alert('Erreur lors de la sauvegarde');
+        // Error handled by handleApiError
     }
 }
 
@@ -117,9 +118,10 @@ async function toggleUserAdmin(id) {
     if (!confirm('Changer le rôle admin de cet utilisateur ?')) return;
     try {
         await api.request(`/admin/users/${id}/toggle-admin`, { method: 'POST' });
+        showToast('Rôle modifié', 'success');
         await loadUsers();
     } catch (error) {
-        alert('Erreur');
+        // Error handled by handleApiError
     }
 }
 
@@ -127,8 +129,9 @@ async function deleteUser(id) {
     if (!confirm('Supprimer cet utilisateur ?')) return;
     try {
         await api.request(`/admin/users/${id}`, { method: 'DELETE' });
+        showToast('Utilisateur supprimé', 'success');
         await loadUsers();
     } catch (error) {
-        alert(error.message || 'Erreur lors de la suppression');
+        // Error handled by handleApiError
     }
 }

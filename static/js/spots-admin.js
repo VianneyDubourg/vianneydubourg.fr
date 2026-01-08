@@ -12,7 +12,7 @@ async function loadSpotsList() {
         spotsTotal = spotsListData.length;
         renderSpotsList();
     } catch (error) {
-        console.error('Error loading spots list:', error);
+        // Error handled by handleApiError
     }
 }
 
@@ -91,9 +91,10 @@ async function deleteSpot(id) {
     if (!confirm('Supprimer ce spot ?')) return;
     try {
         await api.request(`/spots/${id}`, { method: 'DELETE' });
+        showToast('Spot supprimé', 'success');
         await loadSpotsList();
     } catch (error) {
-        alert('Erreur lors de la suppression');
+        // Error handled by handleApiError
     }
 }
 
@@ -126,7 +127,7 @@ async function editSpot(id) {
         document.getElementById('spot-modal').classList.remove('hidden');
         document.querySelector('#spot-modal h3').textContent = 'Éditer le spot';
     } catch (error) {
-        alert('Erreur lors du chargement');
+        // Error handled by handleApiError
     }
 }
 
@@ -147,10 +148,11 @@ async function saveSpot() {
         } else {
             await api.createSpot(data);
         }
+        showToast(currentEditSpot ? 'Spot modifié' : 'Spot créé', 'success');
         await loadSpotsList();
         closeSpotModal();
     } catch (error) {
-        alert('Erreur lors de la sauvegarde');
+        // Error handled by handleApiError
     }
 }
 

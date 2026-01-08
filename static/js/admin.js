@@ -119,10 +119,11 @@ async function bulkDeleteArticles() {
     if (!selected.length || !confirm(`Supprimer ${selected.length} article(s) ?`)) return;
     try {
         await api.bulkDeleteArticles(selected);
+        showToast(`${selected.length} article(s) supprimé(s)`, 'success');
         await loadAdminArticles();
         updateSelection();
     } catch (error) {
-        alert('Erreur lors de la suppression');
+        // Error handled by handleApiError
     }
 }
 
@@ -187,13 +188,15 @@ async function saveArticle() {
     try {
         if (currentEditArticle) {
             await api.updateArticle(currentEditArticle.id, data);
+            showToast('Article modifié avec succès', 'success');
         } else {
             await api.createArticle(data);
+            showToast('Article créé avec succès', 'success');
         }
         await loadAdminArticles();
         closeEditModal();
     } catch (error) {
-        alert('Erreur lors de la sauvegarde');
+        // Error handled by handleApiError
     }
 }
 

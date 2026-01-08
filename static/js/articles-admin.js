@@ -13,7 +13,7 @@ async function loadArticlesList() {
         renderArticlesList();
         updateArticlesPagination();
     } catch (error) {
-        console.error('Error loading articles list:', error);
+        // Error handled by handleApiError
     }
 }
 
@@ -130,8 +130,9 @@ async function deleteArticle(id) {
     if (!confirm('Supprimer cet article ?')) return;
     try {
         await api.request(`/articles/${id}`, { method: 'DELETE' });
+        showToast('Article supprimé', 'success');
         await loadArticlesList();
     } catch (error) {
-        alert('Erreur lors de la suppression');
+        // Error handled by handleApiError
     }
 }
